@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tiger Soju Form</title>
+  <link href="src/bootstrap@5.3.1.min.css" rel="stylesheet">
+  <link href="style.css" rel="stylesheet">
+  <script src="src/bootstrap@5.3.1.min.js"></script>
+
+</head>
+<body>
+  <div id="app">
+    
+    <div class="container">
+      <div id="starterModal" class="modal">
+        <div class="modal-content">
+          <div class="d-flex">
+            <input type="checkbox" id="confirmation-checkbox">
+            <p class="mx-3 mb-0">Please Confirm that your age is over 17th years old. We'll never share your profile with anyone else. </p>
+          </div>
+            <button class="btn primary mt-3" id="confirm-button" disabled>OK</button>
+          </div>
+      </div>
+      <div class="form-container text-white">
+        <form name="tigersojuform" id="submit-form" action="validate_and_submit.php" method="post">
+          <div class="logo text-center">
+            <img src="mobile-logo.svg" alt="tiger soju logo mmk">
+          </div>
+          <div class="mb-3">
+            <label for="name" class="form-label">Full Name</label>
+            <input type="name" class="form-control" id="name" aria-describedby="emailHelp" name="name" v-model="formData.name" required>
+          </div>
+          <div class="mb-3">
+            <label for="phone" class="form-label">Phone Number</label>
+            <input v-model="formData.phone" name="phone" type="text" class="form-control" id="phone">
+          </div>
+
+          <div id="emailHelp" class="form-text mb-5">We'll never share your profile with anyone else.</div>
+          
+          <div class="alert alert-danger mb-10" style="display: none;" role="alert"></div>          
+
+          <div class="d-grid gap-2 col-6 mx-auto">
+            <button id="submit-button" class="btn btn-lg btn-primary btn-submit">Submit</button>
+            <button id="btn-loading" class="btn primary d-none" type="button" disabled>
+              <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+              Loading...
+            </button>
+          </div>
+        </form>
+
+      </div>
+    </div>  
+
+    <div id="modal">
+      <div class="invitation-card text-white text-center">
+        <span class="close">&times;</span>
+        <div class="image-wrapper" id="captured">
+          <h5 id="submittedName"></h5>
+          <img src="thankyou.jpg" alt="image-card">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="src/jquery.min.js"></script>
+  <script>
+      const scriptURL = 'https://script.google.com/macros/s/AKfycbxCfGy_BIBh1e4iKe6gfy5CcutvwPzz5A4wNQTKjCsF2WH7SF1bpC5yHaD0ER2lLXY6/exec'
+      const form = document.forms['tigersojuform'];
+
+      const inputElement = document.getElementsByName("name")[0];
+      const enteredName = inputElement.value;
+      const btnSubmit = document.querySelector('.btn-submit');
+      const btnLoading = document.getElementById('btn-loading');
+      const modal = document.getElementById('modal');
+      const submittedNameElement = document.getElementById('submittedName');
+
+      form.addEventListener('submit', e => {
+        e.preventDefault()
+        btnLoading.classList.toggle('d-none');
+        btnSubmit.classList.toggle('d-none');
+        fetch(scriptURL, { method: 'POST', body: new FormData(form)})
+          .then(response => {
+            btnLoading.classList.toggle('d-none')
+            btnSubmit.classList.toggle('d-none');
+            submittedNameElement.textContent = enteredName;
+            isModalShow(response);
+            form.reset();
+
+            modal.style.display = 'block';          
+            console.log('Success!', response)
+          })
+          .catch(error => console.error('Error!', error.message))
+      })
+
+      function isModalShow(response) {
+        const modal = $("#modal");
+        const name = $("#submit-form input[name='name']").val();
+        
+        modal.fadeIn("fast");
+        $("#submittedName").text("Hello " + name + " Thank you for the participating");
+        
+        // Hide Modal
+        $(".close").click(function() {
+            modal.fadeOut("fast");
+        });
+
+        // Reset Input fill when form submitted
+        $("input").val("");
+      }
+
+      $(document).ready(function() {
+        const modal = $("#starterModal");
+        const checkbox = $("#confirmation-checkbox");
+        const confirmButton = $("#confirm-button");
+
+        // Show the modal after page loads
+        modal.fadeIn();
+
+        // Enable or disable the OK button based on the checkbox state
+        checkbox.change(function() {
+            if (checkbox.prop("checked")) {
+                confirmButton.prop("disabled", false);
+            } else {
+                confirmButton.prop("disabled", true);
+            }
+        });
+
+        // Show the modal again when the OK button is clicked
+        confirmButton.click(function() {
+            modal.fadeOut();
+            checkbox.prop("checked", false);
+            confirmButton.prop("disabled", true);
+        });
+
+      })
+  </script>  
+</body>
+</html>
